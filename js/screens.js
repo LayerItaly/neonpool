@@ -10,6 +10,10 @@
     var ctx = this.ctx;
     var r = this.renderer;
 
+    // start every frame from a known-clean context
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+
     ctx.save();
     if (r.fx.shake > 0.01) {
       ctx.translate(M.rand(-1, 1) * r.fx.shake * 5, M.rand(-1, 1) * r.fx.shake * 5);

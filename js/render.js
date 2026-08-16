@@ -324,10 +324,14 @@
       ctx.restore();
     }
 
-    // rim shade
-    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
-    ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(0, 0, r - 0.7, 0, Math.PI * 2); ctx.stroke();
+    // rim shade - skipped once the ball has shrunk into the pocket, since an
+    // inset radius would go negative and arc() throws on that
+    var rim = r - 0.7;
+    if (rim > 0.2) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = Math.min(1.4, rim);
+      ctx.beginPath(); ctx.arc(0, 0, rim, 0, Math.PI * 2); ctx.stroke();
+    }
 
     // number badge (hidden while spinning fast so it reads as motion)
     if (b.n > 0 && sc > 0.55) {

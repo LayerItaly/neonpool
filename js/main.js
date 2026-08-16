@@ -85,19 +85,35 @@
   window.addEventListener('keydown', unlock);
 
   /* ---- main loop ---- */
+  // The frame is always re-scheduled, even if a frame blows up: one bad draw must
+  // never kill the loop and leave a half-painted table on screen.
   var last = performance.now();
+  var faults = 0;
   function frame(now) {
+    requestAnimationFrame(frame);
+
     var dt = (now - last) / 1000;
     last = now;
     if (dt > 0.1) dt = 0.1;
 
-    if (game.state !== 'paused' && game.state !== 'help') {
-      game.update(dt);
-    } else {
-      game.renderer.update(dt * 0.4);
+    try {
+      if (game.state !== 'paused' && game.state !== 'help') {
+        game.update(dt);
+      } else {
+        game.renderer.update(dt * 0.4);
+      }
+      game.draw();
+    } catch (e) {
+      faults++;
+      if (faults <= 5 && window.console) {
+        console.error('[NEON POOL] frame error #' + faults + ' (state=' + game.state + ')', e);
+      }
+      // a throw mid-draw leaves save()/translate() unbalanced: reset the context
+      for (var k = 0; k < 8; k++) ctx.restore();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.setLineDash([]);
     }
-    game.draw();
-    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 })();
